@@ -12,5 +12,5 @@
 @property(nonatomic,copy)void(^dismissBlock)();
 @property(nonatomic,strong)ImageModel * model;
 - (void)updateImageSize;
-
+- (void)changeSize:(CGFloat)multiple centerY:(CGFloat)centerY;
 @end

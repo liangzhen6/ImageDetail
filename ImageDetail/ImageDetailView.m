@@ -27,6 +27,8 @@ NSString * const registerId = @"collectionCell";
 
 @property(nonatomic,assign)NSInteger currentPage;
 
+@property(nonatomic,strong)ImageDetailCollectionViewCell * currentCell;
+
 @end
 
 @implementation ImageDetailView
@@ -79,10 +81,57 @@ NSString * const registerId = @"collectionCell";
 
 
 - (void)initView {
-    
+    self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:1.0];
     [self addSubview:self.collectionView];
     [self addSubview:self.pageControl];
+    UIPanGestureRecognizer * pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panAction:)];
+    [self addGestureRecognizer:pan];
+}
 
+- (void)panAction:(UIPanGestureRecognizer *)gesture {
+    CGPoint piont = [gesture translationInView:self];
+    CGFloat flo = (500 - piont.y)/500;
+    switch (gesture.state) {
+        case UIGestureRecognizerStateBegan:
+            {
+             _currentCell = [self getCurrentCell];
+            }
+            break;
+        case UIGestureRecognizerStateChanged:
+            {
+                self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:flo];
+                if (flo<1 && flo>0) {
+                    [_currentCell changeSize:flo centerY:piont.y];
+                }
+
+            }
+            break;
+        case UIGestureRecognizerStateEnded:
+            {
+                self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:1.0];
+                [_currentCell changeSize:1.0 centerY:0.0];
+            }
+            break;
+            
+        default:
+            break;
+    }
+
+    NSLog(@"%f%f",piont.x, piont.y);
+}
+
+- (ImageDetailCollectionViewCell *)getCurrentCell {
+    
+    NSInteger index = self.collectionView.contentOffset.x / Screen_Width;
+    
+    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:index inSection:0];
+    
+    ImageDetailCollectionViewCell * currentcell = (ImageDetailCollectionViewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
+    
+    NSLog(@"%ld--%@",indexPath.row,currentcell);
+    
+    return currentcell;
+    
 }
 
 - (void)setCurrentPage:(NSInteger)currentPage {
@@ -130,7 +179,7 @@ NSString * const registerId = @"collectionCell";
         _collectionView.delegate = self;
         _collectionView.pagingEnabled = YES;
         _collectionView.showsHorizontalScrollIndicator = NO;
-
+        _collectionView.backgroundColor = [UIColor clearColor];
         [_collectionView registerClass:[ImageDetailCollectionViewCell class] forCellWithReuseIdentifier:registerId];
         
     }
@@ -150,11 +199,9 @@ NSString * const registerId = @"collectionCell";
     ImageDetailCollectionViewCell * cell = [collectionView dequeueReusableCellWithReuseIdentifier:registerId forIndexPath:indexPath];
     cell.model = [self.dataSource objectAtIndex:indexPath.row];
     __weak typeof (self)ws = self;
-    cell.dismissBlock=^(){
+    [cell setDismissBlock:^{
         [ws dismissView];
-    
-    };
-    
+    }];
     return cell;
 }
 

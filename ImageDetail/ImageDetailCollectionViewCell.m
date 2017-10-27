@@ -46,9 +46,12 @@
     tap2.numberOfTapsRequired = 2;
     [tap1 requireGestureRecognizerToFail:tap2];
     [self addGestureRecognizer:tap2];
-
+    
 
 }
+
+
+
 #pragma mark========tapAction==============
 - (void)singleTap:(UITapGestureRecognizer *)tap {
     if (self.dismissBlock) {
@@ -125,17 +128,11 @@
                 frame.size = CGSizeMake(Screen_Width, Screen_Width/imageWH);
                 model.size = frame.size;
             }
-            
             ws.scrollView.contentSize = frame.size;
             ws.ImageView.frame = frame;
             ws.ImageView.center = CGPointMake(Screen_Width / 2, Screen_Height / 2);
         }
-        
-        
     }];
-    
-    
-
 }
 
 - (UIScrollView *)scrollView {
@@ -161,6 +158,10 @@
     return _scrollView;
 }
 
+- (void)changeSize:(CGFloat)multiple centerY:(CGFloat)centerY {
+    _scrollView.transform = CGAffineTransformMakeScale(multiple, multiple);
+    _scrollView.center = CGPointMake(Screen_Width/2, Screen_Height/2+centerY);
+}
 
 
 @end
