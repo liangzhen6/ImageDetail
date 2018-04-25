@@ -70,6 +70,7 @@
 		FA254D911E812FB4006E256B /* ImageDetailView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageDetailView.m; sourceTree = "<group>"; };
 		FA254D931E8133A0006E256B /* ImageDetailCollectionViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageDetailCollectionViewCell.h; sourceTree = "<group>"; };
 		FA254D941E8133A0006E256B /* ImageDetailCollectionViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageDetailCollectionViewCell.m; sourceTree = "<group>"; };
+		FA4439D420907922003800A8 /* ImageHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ImageHeader.h; sourceTree = "<group>"; };
 		FA5DE00F1E8154D500DF5AE0 /* ImageModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageModel.h; sourceTree = "<group>"; };
 		FA5DE0101E8154D500DF5AE0 /* ImageModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageModel.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -193,6 +194,7 @@
 		FAC156E41E8228250087D205 /* ImageDetailView */ = {
 			isa = PBXGroup;
 			children = (
+				FA4439D420907922003800A8 /* ImageHeader.h */,
 				FA254D901E812FB4006E256B /* ImageDetailView.h */,
 				FA254D911E812FB4006E256B /* ImageDetailView.m */,
 				FA254D931E8133A0006E256B /* ImageDetailCollectionViewCell.h */,

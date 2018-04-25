@@ -9,13 +9,7 @@
 #import "ImageDetailView.h"
 #import "ImageDetailCollectionViewCell.h"
 #import "ImageModel.h"
-
-#define IOS_VERSION      [[[UIDevice currentDevice] systemVersion] floatValue]
-#define Screen_Frame     [[UIScreen mainScreen] bounds]
-#define Screen_Width     [[UIScreen mainScreen] bounds].size.width
-#define Screen_Height    [[UIScreen mainScreen] bounds].size.height
-
-#define SpaceWidth  20
+#import "ImageHeader.h"
 
 NSString * const registerId = @"collectionCell";
 
@@ -24,30 +18,22 @@ NSString * const registerId = @"collectionCell";
 @property(nonatomic,strong)UICollectionView * collectionView;
 @property(nonatomic,strong)UIPageControl * pageControl;
 @property(nonatomic,strong)NSMutableArray * dataSource;
-
-@property(nonatomic,assign)NSInteger currentPage;
-
+@property(nonatomic,strong)NSMutableArray * imageViewsPoint;
+@property(nonatomic,strong)NSMutableArray * imageViewsImage;
 @property(nonatomic,strong)ImageDetailCollectionViewCell * currentCell;
 
 @end
 
 @implementation ImageDetailView
 
-+ (id)imageDetailViewWithDataArray:(NSArray *)array currentPage:(NSInteger)page {
-    ImageDetailView * imageDetail = [[ImageDetailView alloc] initWithFrame:Screen_Frame];
-    imageDetail.dataSource = [[NSMutableArray alloc] init];
-    for (NSString * str in array) {
-        ImageModel * model = [[ImageModel alloc] init];
-        model.url = str;
-        [imageDetail.dataSource addObject:model];
-    }
-    
-    imageDetail.currentPage = page;
-    
-    [imageDetail.collectionView reloadData];
-    
++ (id)imageDetailViewWithUrlStrs:(NSArray<NSString *> *)imagesUrlArr originImageViews:(NSArray<UIImageView *> *)originImageViews {
+     ImageDetailView * imageDetail = [[ImageDetailView alloc] initWithFrame:Screen_Frame];
+    imageDetail.originImageViewArr = originImageViews;
+    imageDetail.imagesUrlArr = imagesUrlArr;
+    [imageDetail initData];
     return imageDetail;
 }
+
 
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -57,26 +43,72 @@ NSString * const registerId = @"collectionCell";
     return self;
 }
 
+- (void)initData {
+
+    //1.初始化原始的数据
+    self.dataSource = [[NSMutableArray alloc] init];
+    for (NSString * str in self.imagesUrlArr) {
+        ImageModel * model = [[ImageModel alloc] init];
+        model.url = str;
+        [self.dataSource addObject:model];
+    }
+}
+
 - (void)showView {
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
     [window addSubview:self];
+    UIImageView * originImageView = self.originImageViewArr[self.currentPage];
+    CGRect frame = [originImageView convertRect:originImageView.bounds toView:originImageView.window];
+
+    UIImageView * imageView = [[UIImageView alloc] initWithFrame:frame];
+    imageView.contentMode = UIViewContentModeScaleAspectFill;
+    imageView.clipsToBounds = YES;
+
+    imageView.image = originImageView.image;
+    [self addSubview:imageView];
     
-    self.transform = CGAffineTransformMakeScale(0, 0);
-    [UIView animateWithDuration:.1 animations:^{
-        self.transform = CGAffineTransformIdentity;
+    CGFloat imageW = imageView.image.size.width;
+    CGFloat imageH = imageView.image.size.height;
+    [UIView animateWithDuration:0.3 animations:^{
+        CGRect frame = imageView.frame;
+        frame.size.width = Screen_Width;
+        frame.size.height = Screen_Width * imageH/imageW;
+        imageView.frame = frame;
+        imageView.center = CGPointMake(Screen_Width/2, Screen_Height/2);
+    } completion:^(BOOL finished) {
+        self.collectionView.hidden = NO;
+        self.pageControl.hidden = NO;
+        [imageView removeFromSuperview];
     }];
 
 
 }
 - (void)dismissView {
-    self.transform = CGAffineTransformIdentity;
-    [UIView animateWithDuration:.1 animations:^{
-        self.transform = CGAffineTransformMakeScale(0.0000000001, 0.00000001);
-    }completion:^(BOOL finished) {
+    ImageDetailCollectionViewCell * cell = [self getCurrentCell];
+    UIImageView * imageViewCell = [cell valueForKey:@"ImageView"];
+    NSLog(@"%@",imageViewCell);
+    CGRect scrollFrame = [[cell valueForKey:@"scrollView"] frame];
+    CGFloat H = scrollFrame.size.width*imageViewCell.image.size.height/imageViewCell.image.size.width;
+    
+    UIImageView * imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, scrollFrame.size.width, H)];
+    imageView.center = [[cell valueForKey:@"scrollView"] center];
+    imageView.image = imageViewCell.image;
+    imageView.clipsToBounds = YES;
+    imageView.contentMode = UIViewContentModeScaleAspectFill;
+    [self addSubview:imageView];
+    self.collectionView.hidden = YES;
+    self.pageControl.hidden = YES;
+    
+    UIImageView * originImageView = self.originImageViewArr[self.currentPage];
+    CGRect frame = [originImageView convertRect:originImageView.bounds toView:originImageView.window];
+    [UIView animateWithDuration:0.3 animations:^{
+        imageView.frame = frame;
+        self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.0];
+    } completion:^(BOOL finished) {
+        imageView.hidden = YES;
         [self removeFromSuperview];
     }];
     
-
 }
 
 
@@ -86,6 +118,7 @@ NSString * const registerId = @"collectionCell";
     [self addSubview:self.pageControl];
     UIPanGestureRecognizer * pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panAction:)];
     [self addGestureRecognizer:pan];
+    
 }
 
 - (void)panAction:(UIPanGestureRecognizer *)gesture {
@@ -94,7 +127,8 @@ NSString * const registerId = @"collectionCell";
     switch (gesture.state) {
         case UIGestureRecognizerStateBegan:
             {
-             _currentCell = [self getCurrentCell];
+                _currentCell = [self getCurrentCell];
+                NSLog(@"开始%f%f",piont.x, piont.y);
             }
             break;
         case UIGestureRecognizerStateChanged:
@@ -103,13 +137,20 @@ NSString * const registerId = @"collectionCell";
                 if (flo<1 && flo>0) {
                     [_currentCell changeSize:flo centerY:piont.y];
                 }
-
             }
             break;
         case UIGestureRecognizerStateEnded:
             {
-                self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:1.0];
-                [_currentCell changeSize:1.0 centerY:0.0];
+                //方向速度向量，y>0 证明向下移动。
+                CGPoint spceVelocity = [gesture velocityInView:gesture.view];
+                if (spceVelocity.y > 0) {
+                    [self dismissView];
+                } else {
+                    [UIView animateWithDuration:0.3 animations:^{
+                        self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:1.0];
+                        [_currentCell changeSize:1.0 centerY:0.0];
+                    }];
+                }
             }
             break;
             
@@ -117,8 +158,9 @@ NSString * const registerId = @"collectionCell";
             break;
     }
 
-    NSLog(@"%f%f",piont.x, piont.y);
+//    NSLog(@"%f%f",piont.x, piont.y);
 }
+
 
 - (ImageDetailCollectionViewCell *)getCurrentCell {
     
@@ -141,9 +183,9 @@ NSString * const registerId = @"collectionCell";
     self.pageControl.frame = CGRectMake(Screen_Width/2-size.width/2, Screen_Height-size.height-20, size.width, size.height);
     
     self.pageControl.currentPage = currentPage;
-    
-//    NSIndexPath * indexPath = [NSIndexPath indexPathForRow:currentPage inSection:0];
-//    [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:YES];
+    self.pageControl.hidden = YES;
+    self.collectionView.hidden = YES;
+
     
     [self.collectionView setContentOffset:CGPointMake((Screen_Width+SpaceWidth)*currentPage, 0)];
 
@@ -222,7 +264,7 @@ NSString * const registerId = @"collectionCell";
     CGFloat X = scrollView.contentOffset.x;
     NSInteger page = X/(Screen_Width+SpaceWidth);
 //    NSLog(@"%f-----%f-----%ld",X,Screen_Width,(long)page);
-    
+    _currentPage = page;
     [self.pageControl setCurrentPage:page];
 
 }
@@ -233,10 +275,12 @@ NSString * const registerId = @"collectionCell";
     CGFloat X = scrollView.contentOffset.x;
     NSInteger page = X/(Screen_Width+SpaceWidth);
 //    NSLog(@"%f-----%f-----%ld",X,Screen_Width,(long)page);
-    
+    _currentPage = page;
     [self.pageControl setCurrentPage:page];
 
 }
+
+
 
 /*
 // Only override drawRect: if you perform custom drawing.

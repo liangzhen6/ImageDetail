@@ -9,17 +9,11 @@
 #import "ImageDetailCollectionViewCell.h"
 #import <SDWebImage/UIImageView+WebCache.h>
 #import "ImageModel.h"
-
-#define IOS_VERSION      [[[UIDevice currentDevice] systemVersion] floatValue]
-#define Screen_Frame     [[UIScreen mainScreen] bounds]
-#define Screen_Width     [[UIScreen mainScreen] bounds].size.width
-#define Screen_Height    [[UIScreen mainScreen] bounds].size.height
+#import "ImageHeader.h"
 
 @interface ImageDetailCollectionViewCell ()<UIScrollViewDelegate>
-
 @property (nonatomic,strong) UIScrollView *scrollView;
 @property (nonatomic,strong) UIImageView *ImageView;
-//@property (nonatomic,assign) CGPoint imageCenter;
 
 @end
 
@@ -47,7 +41,6 @@
     [tap1 requireGestureRecognizerToFail:tap2];
     [self addGestureRecognizer:tap2];
     
-
 }
 
 
@@ -143,8 +136,8 @@
         _scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, Screen_Width, Screen_Height)];
         _scrollView.delegate = self;
         _scrollView.bouncesZoom = YES;
-        _scrollView.maximumZoomScale = 2.5;
-        _scrollView.minimumZoomScale = 1.0;
+        _scrollView.maximumZoomScale = 2.5;//最大放大倍数
+        _scrollView.minimumZoomScale = 1.0;//最小缩小倍数
         _scrollView.multipleTouchEnabled = YES;
         _scrollView.scrollsToTop = NO;
         _scrollView.contentSize = CGSizeMake(width, height);

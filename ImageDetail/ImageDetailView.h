@@ -10,8 +10,10 @@
 
 @interface ImageDetailView : UIView
 
-+ (id)imageDetailViewWithDataArray:(NSArray *)array currentPage:(NSInteger)page;
-
++ (id)imageDetailViewWithUrlStrs:(NSArray<NSString *> *)imagesUrlArr originImageViews:(NSArray<UIImageView *> *)originImageViews;
+@property(nonatomic,assign)NSInteger currentPage;
+@property(nonatomic,copy)NSArray <NSString *>* imagesUrlArr;
+@property(nonatomic,copy)NSArray <UIImageView *>* originImageViewArr;
 - (void)showView;
 - (void)dismissView;
 @end
