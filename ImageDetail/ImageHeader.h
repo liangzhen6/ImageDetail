@@ -9,7 +9,6 @@
 #ifndef ImageHeader_h
 #define ImageHeader_h
 
-#define IOS_VERSION      [[[UIDevice currentDevice] systemVersion] floatValue]
 #define Screen_Frame     [[UIScreen mainScreen] bounds]
 #define Screen_Width     [[UIScreen mainScreen] bounds].size.width
 #define Screen_Height    [[UIScreen mainScreen] bounds].size.height

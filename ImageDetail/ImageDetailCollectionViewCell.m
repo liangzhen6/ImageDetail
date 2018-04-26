@@ -126,8 +126,8 @@
 {
     [_scrollView setZoomScale:1.0 animated:NO];
     
-    CGFloat imageW = self.model.imageSize.width;
-    CGFloat imageH = self.model.imageSize.height;
+    CGFloat imageW = self.model.smallImageSize.width;
+    CGFloat imageH = self.model.smallImageSize.height;
     
     CGFloat height =  Screen_Width * imageH/imageW;
     if (imageH/imageW > Screen_Height/Screen_Width) {
@@ -137,19 +137,17 @@
         _ImageView.frame =CGRectMake(0, Screen_Height/2 - height/2, Screen_Width, height);
     }
     _scrollView.contentSize = CGSizeMake(Screen_Width, height);
-    _model.imageSize = CGSizeMake(Screen_Width, height);
+    _model.smallImageSize = CGSizeMake(Screen_Width, height);
     
 }
 
 - (void)setModel:(ImageModel *)model {
     _model = model;
-//    CGFloat WH = Screen_Width/Screen_Height;
     
-//    NSLog(@"%@",model.url);
     __weak typeof (self)ws = self;
-    [_ImageView sd_setImageWithURL:[NSURL URLWithString:model.url] completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+    [_ImageView sd_setImageWithURL:[NSURL URLWithString:model.urlStr] placeholderImage:model.smallImageView.image completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
         if (!error) {
-            ws.model.imageSize = image.size;
+//            ws.model.thumbnailImageSize = image.size;
             [ws updateImageSize];
         }
     }];

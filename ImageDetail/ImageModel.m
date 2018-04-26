@@ -10,17 +10,17 @@
 #import "ImageHeader.h"
 @implementation ImageModel
 
-- (CGRect)imageViewframeOriginWindow {
-    return [self.imageView convertRect:self.imageView.bounds toView:self.imageView.window];
+- (CGRect)smallImageViewframeOriginWindow {
+    return [self.smallImageView convertRect:self.smallImageView.bounds toView:self.smallImageView.window];
 }
 
-- (CGSize)imageSize {
-    return self.imageView.image.size;
+- (CGSize)smallImageSize {
+    return self.smallImageView.image.size;
 }
 
 - (CGRect)imageViewframeShowWindow {
-    CGFloat imageW = self.imageSize.width;
-    CGFloat imageH = self.imageSize.height;
+    CGFloat imageW = self.smallImageSize.width;
+    CGFloat imageH = self.smallImageSize.height;
     CGRect frame;
     CGFloat H = Screen_Width * imageH/imageW;
     if (imageH/imageW > Screen_Height/Screen_Width) {

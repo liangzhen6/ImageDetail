@@ -53,8 +53,8 @@ NSString * const registerId = @"collectionCell";
         NSString * urlStr = self.imagesUrlArr[i];
         UIImageView * imageView = self.originImageViewArr[i];
         ImageModel * model = [[ImageModel alloc] init];
-        model.imageView = imageView;
-        model.url = urlStr;
+        model.smallImageView = imageView;
+        model.urlStr = urlStr;
         [self.dataSource addObject:model];
     }
     
@@ -64,12 +64,12 @@ NSString * const registerId = @"collectionCell";
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
     [window addSubview:self];
     ImageModel * currentModel = self.dataSource[self.currentPage];
-    CGRect frame = [currentModel imageViewframeOriginWindow];
+    CGRect frame = [currentModel smallImageViewframeOriginWindow];
 
     UIImageView * imageView = [[UIImageView alloc] initWithFrame:frame];
     imageView.contentMode = UIViewContentModeScaleAspectFill;
     imageView.clipsToBounds = YES;
-    imageView.image = currentModel.imageView.image;
+    imageView.image = currentModel.smallImageView.image;
     [self addSubview:imageView];
     
     
@@ -95,7 +95,7 @@ NSString * const registerId = @"collectionCell";
     
     ImageModel * currentModel = self.dataSource[self.currentPage];
     [UIView animateWithDuration:0.3 animations:^{
-        imageView.frame = [currentModel imageViewframeOriginWindow];
+        imageView.frame = [currentModel smallImageViewframeOriginWindow];
         self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0];
     } completion:^(BOOL finished) {
         imageView.hidden = YES;
