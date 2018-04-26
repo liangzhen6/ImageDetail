@@ -22,4 +22,5 @@ typedef void(^CollectionBackAlphaBlock) (CGFloat alpha);
 
 - (UIImage *)currentImage;
 
+- (UIImageView *)currentImageView;
 @end

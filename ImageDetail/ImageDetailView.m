@@ -21,6 +21,10 @@ NSString * const registerId = @"collectionCell";
 @property(nonatomic,strong)NSMutableArray * imageViewsPoint;
 @property(nonatomic,strong)NSMutableArray * imageViewsImage;
 @property(nonatomic,strong)ImageDetailCollectionViewCell * currentCell;
+//从点击的位置开始到图片的顶部的绝对差值（图片划到最低点+图片因缩小造成的）
+@property(nonatomic,assign)CGFloat absoluteDifference;
+//从点击开始带屏幕底部的距离
+@property(nonatomic,assign)CGFloat longBottom;
 
 @end
 
@@ -113,18 +117,14 @@ NSString * const registerId = @"collectionCell";
 - (void)panAction:(UIPanGestureRecognizer *)gesture {
     CGPoint piont = [gesture translationInView:self];
     CGFloat flo = (Screen_Height - piont.y)/Screen_Height;
-    static CGFloat abschazhi = 0;
-    static CGFloat locationY = 0;
     switch (gesture.state) {
         case UIGestureRecognizerStateBegan:
             {
                 _currentCell = [self getCurrentCell];
                 CGPoint location = [gesture locationInView:self];
-                ImageDetailCollectionViewCell * cell = [self getCurrentCell];
-                UIImageView * imageViewCell = [cell valueForKey:@"ImageView"];
-                abschazhi = imageViewCell.frame.origin.y - location.y + 0.3*imageViewCell.frame.size.height;
-                locationY = Screen_Height - location.y;
-//                NSLog(@"开始%f%f",location.x, location.y);
+                UIImageView * imageViewCell = [_currentCell currentImageView];
+                _absoluteDifference = imageViewCell.frame.origin.y - location.y + 0.3*imageViewCell.frame.size.height;
+                _longBottom = Screen_Height - location.y;
             }
             break;
         case UIGestureRecognizerStateChanged:
@@ -133,11 +133,10 @@ NSString * const registerId = @"collectionCell";
                 if (flo<1 && flo>0) {
                     CGFloat num = piont.y;
 //                    NSLog(@"%f--caocao--%f",num,piont.y);
-                    if (abschazhi > 0) {
+                    if (_absoluteDifference > 0) {
                         CGPoint location = [gesture locationInView:self];
-                        num -= abschazhi * (location.y -Screen_Height+locationY)/locationY;
+                        num -= _absoluteDifference * (location.y -Screen_Height+_longBottom)/_longBottom;
 //                        NSLog(@"%f--caocao-",num);
-
                     }
                     [_currentCell changeSize:flo centerY:num];
                 }
@@ -161,8 +160,6 @@ NSString * const registerId = @"collectionCell";
         default:
             break;
     }
-
-//    NSLog(@"%f%f",piont.x, piont.y);
 }
 
 

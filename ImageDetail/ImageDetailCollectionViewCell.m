@@ -197,6 +197,8 @@
 - (UIImage *)currentImage {
     return _ImageView.image;
 }
-
+- (UIImageView *)currentImageView {
+    return _ImageView;
+}
 
 @end
