@@ -43,65 +43,55 @@ NSString * const registerId = @"collectionCell";
 }
 
 - (void)initData {
-#warning  model 可以包含当前的图片 大图url 小图尺寸等信息。
     //1.初始化原始的数据
     self.dataSource = [[NSMutableArray alloc] init];
-    for (NSString * str in self.imagesUrlArr) {
+    for (NSInteger i = 0; i < self.imagesUrlArr.count; i++) {
+        NSString * urlStr = self.imagesUrlArr[i];
+        UIImageView * imageView = self.originImageViewArr[i];
         ImageModel * model = [[ImageModel alloc] init];
-        model.url = str;
+        model.imageView = imageView;
+        model.url = urlStr;
         [self.dataSource addObject:model];
     }
+    
 }
 
 - (void)showView {
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
     [window addSubview:self];
-    UIImageView * originImageView = self.originImageViewArr[self.currentPage];
-    CGRect frame = [originImageView convertRect:originImageView.bounds toView:originImageView.window];
+    ImageModel * currentModel = self.dataSource[self.currentPage];
+    CGRect frame = [currentModel imageViewframeOriginWindow];
 
     UIImageView * imageView = [[UIImageView alloc] initWithFrame:frame];
     imageView.contentMode = UIViewContentModeScaleAspectFill;
     imageView.clipsToBounds = YES;
-
-    imageView.image = originImageView.image;
+    imageView.image = currentModel.imageView.image;
     [self addSubview:imageView];
     
-    CGFloat imageW = imageView.image.size.width;
-    CGFloat imageH = imageView.image.size.height;
+    
     [UIView animateWithDuration:0.3 animations:^{
-        CGRect frame = imageView.frame;
-        frame.size.width = Screen_Width;
-        frame.size.height = Screen_Width * imageH/imageW;
-        imageView.frame = frame;
-        imageView.center = CGPointMake(Screen_Width/2, Screen_Height/2);
+        imageView.frame = [currentModel imageViewframeShowWindow];
     } completion:^(BOOL finished) {
         self.collectionView.hidden = NO;
         self.pageControl.hidden = NO;
         [imageView removeFromSuperview];
     }];
-
-
 }
 - (void)dismissView {
     ImageDetailCollectionViewCell * cell = [self getCurrentCell];
-    UIImageView * imageViewCell = [cell valueForKey:@"ImageView"];
-    NSLog(@"%@",imageViewCell);
-    CGRect scrollFrame = [[cell valueForKey:@"scrollView"] frame];
-    CGFloat H = scrollFrame.size.width*imageViewCell.image.size.height/imageViewCell.image.size.width;
     
-    UIImageView * imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0 , scrollFrame.size.width, H)];
-    imageView.center = [[cell valueForKey:@"scrollView"] center];
-    imageView.image = imageViewCell.image;
+    UIImageView * imageView = [[UIImageView alloc] initWithFrame:[cell imageViewframeOnScrollView]];
+    imageView.image = [cell currentImage];
     imageView.clipsToBounds = YES;
     imageView.contentMode = UIViewContentModeScaleAspectFill;
     [self addSubview:imageView];
+    
     self.collectionView.hidden = YES;
     self.pageControl.hidden = YES;
     
-    UIImageView * originImageView = self.originImageViewArr[self.currentPage];
-    CGRect frame = [originImageView convertRect:originImageView.bounds toView:originImageView.window];
+    ImageModel * currentModel = self.dataSource[self.currentPage];
     [UIView animateWithDuration:0.3 animations:^{
-        imageView.frame = frame;
+        imageView.frame = [currentModel imageViewframeOriginWindow];
         self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0];
     } completion:^(BOOL finished) {
         imageView.hidden = YES;
@@ -177,8 +167,10 @@ NSString * const registerId = @"collectionCell";
 
 
 - (ImageDetailCollectionViewCell *)getCurrentCell {
-    
-    NSInteger index = self.collectionView.contentOffset.x / Screen_Width;
+    NSInteger width = (Screen_Width+SpaceWidth);
+//    NSInteger index = self.collectionView.contentOffset.x / width;
+    NSInteger num = ((int)self.collectionView.contentOffset.x%(int)width)>width/2?1:0;
+    NSInteger index = self.collectionView.contentOffset.x / width + num;
     
     NSIndexPath *indexPath = [NSIndexPath indexPathForItem:index inSection:0];
     
@@ -263,17 +255,17 @@ NSString * const registerId = @"collectionCell";
     return cell;
 }
 
-- (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
-    if ([cell isKindOfClass:[ImageDetailCollectionViewCell class]]) {
-//        [(ImageDetailCollectionViewCell *)cell updateImageSize];
-    }
-}
-
-- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
-    if ([cell isKindOfClass:[ImageDetailCollectionViewCell class]]) {
-//        [(ImageDetailCollectionViewCell *)cell updateImageSize];
-    }
-}
+//- (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
+//    if ([cell isKindOfClass:[ImageDetailCollectionViewCell class]]) {
+////        [(ImageDetailCollectionViewCell *)cell updateImageSize];
+//    }
+//}
+//
+//- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
+//    if ([cell isKindOfClass:[ImageDetailCollectionViewCell class]]) {
+////        [(ImageDetailCollectionViewCell *)cell updateImageSize];
+//    }
+//}
 
 #pragma mark  ==========UICollectionView->scrollerViewDeleagte=====================
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
@@ -291,7 +283,7 @@ NSString * const registerId = @"collectionCell";
     CGFloat X = scrollView.contentOffset.x;
     NSInteger page = X/(Screen_Width+SpaceWidth);
 //    NSLog(@"%f-----%f-----%ld",X,Screen_Width,(long)page);
-    _currentPage = page;
+//    _currentPage = page;//当开始滑动的时候不需要指定滑动那个了，等停止了再指定滑到了哪个
     [self.pageControl setCurrentPage:page];
 
 }

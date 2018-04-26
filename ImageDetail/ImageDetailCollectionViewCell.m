@@ -10,7 +10,7 @@
 #import <SDWebImage/UIImageView+WebCache.h>
 #import "ImageModel.h"
 #import "ImageHeader.h"
-//#import "LZscrollView.h"
+
 @interface ImageDetailCollectionViewCell ()<UIScrollViewDelegate>
 @property (nonatomic,strong) UIScrollView *scrollView;
 @property (nonatomic,strong) UIImageView *ImageView;
@@ -68,18 +68,26 @@
 - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset {
     CGPoint point = scrollView.contentOffset;
     //只有是一根手指事件才做出响应。
-    if (point.y < 0 && _numberFinger < 2) {
-//        CGPoint spceVelocity = [scrollView.panGestureRecognizer velocityInView:scrollView.panGestureRecognizer.view];
+    if (point.y < 0 && _numberFinger == 1) {
         if (velocity.y < 0) {
             _startRun = NO;
             //如果是向下滑动才触发消失的操作。
             if (self.dismissBlock) {
                 self.dismissBlock();
             }
+        } else {
+            [self changeSize:1.0 centerY:0.0];
+            if (self.backAlphaBlock) {
+                self.backAlphaBlock(1.0);
+            }
         }
-//        NSLog(@"%@------%@",NSStringFromCGPoint(point),NSStringFromCGPoint(spceVelocity));
+
+    } else {
+        [self changeSize:1.0 centerY:0.0];
+        if (self.backAlphaBlock) {
+            self.backAlphaBlock(1.0);
+        }
     }
-    
     _numberFinger = 0;
 }
 
@@ -91,18 +99,13 @@
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
    CGPoint point = scrollView.contentOffset;
     //只有是一根手指事件才做出响应。
-    if ((point.y < 0 && _numberFinger < 2) && _startRun) {
-//        scrollView.scrollEnabled = NO;
-//       CGPoint spceVelocity = [scrollView.panGestureRecognizer velocityInView:scrollView.panGestureRecognizer.view];
-        
+    if ((point.y < 0 && _numberFinger == 1 ) && _startRun) {
         CGFloat flo = (Screen_Height + point.y)/Screen_Height;
         [self changeSize:flo centerY:-point.y];
         if (self.backAlphaBlock) {
             self.backAlphaBlock(flo);
         }
-//         NSLog(@"%@------%@",NSStringFromCGPoint(point),NSStringFromCGPoint(spceVelocity));
     }
-   
 }
 
 
@@ -122,29 +125,9 @@
 - (void)updateImageSize
 {
     [_scrollView setZoomScale:1.0 animated:NO];
-//    CGFloat width = self.frame.size.width;
-//    CGFloat height = self.frame.size.height;
-//
-//    CGFloat imgWidth = self.model.size.width;
-//    CGFloat imgHeight = self.model.size.height;
-//    if (imgWidth < width) {
-//        _ImageView.frame = CGRectMake(0, 0, imgWidth, imgHeight);
-//        _scrollView.contentSize = CGSizeMake(width, imgHeight);
-//    }else {
-//        imgHeight = width / imgWidth * imgHeight;
-//        _ImageView.frame = CGRectMake(0, 0, width, imgHeight);
-//        _scrollView.contentSize = CGSizeMake(width, imgHeight);
-//        _ImageView.center = CGPointMake(width / 2, imgHeight / 2);
-//    }
-//
-//    if (imgHeight > height) {
-//        _ImageView.center = CGPointMake(width / 2, imgHeight / 2);
-//    }else {
-//        _ImageView.center = CGPointMake(width / 2, height / 2);
-//    }
     
-    CGFloat imageW = self.model.size.width;
-    CGFloat imageH = self.model.size.height;
+    CGFloat imageW = self.model.imageSize.width;
+    CGFloat imageH = self.model.imageSize.height;
     
     CGFloat height =  Screen_Width * imageH/imageW;
     if (imageH/imageW > Screen_Height/Screen_Width) {
@@ -154,7 +137,7 @@
         _ImageView.frame =CGRectMake(0, Screen_Height/2 - height/2, Screen_Width, height);
     }
     _scrollView.contentSize = CGSizeMake(Screen_Width, height);
-    _model.size = CGSizeMake(Screen_Width, height);
+    _model.imageSize = CGSizeMake(Screen_Width, height);
     
 }
 
@@ -166,21 +149,8 @@
     __weak typeof (self)ws = self;
     [_ImageView sd_setImageWithURL:[NSURL URLWithString:model.url] completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
         if (!error) {
-            ws.model.size = image.size;
+            ws.model.imageSize = image.size;
             [ws updateImageSize];
-//            CGFloat imageWH = image.size.width/image.size.height;
-//            CGRect frame = ws.ImageView.frame;
-//            if (WH>imageWH) {
-//                frame.size = CGSizeMake(Screen_Height *imageWH, Screen_Height);
-//                model.size = frame.size;
-//
-//            }else{
-//                frame.size = CGSizeMake(Screen_Width, Screen_Width/imageWH);
-//                model.size = frame.size;
-//            }
-//            ws.scrollView.contentSize = frame.size;
-//            ws.ImageView.frame = frame;
-//            ws.ImageView.center = CGPointMake(Screen_Width / 2, Screen_Height / 2);
         }
     }];
 }
@@ -212,12 +182,20 @@
 - (void)changeSize:(CGFloat)multiple centerY:(CGFloat)centerY {
     NSLog(@"%f---%f",multiple,centerY);
     multiple = multiple>0.4?multiple:0.4;
-//    centerY = centerY>Screen_Height/2?Screen_Height/2:centerY;
     _scrollView.transform = CGAffineTransformMakeScale(multiple, multiple);
     _scrollView.center = CGPointMake(Screen_Width/2, Screen_Height/2+centerY);
-//    CGRect scrollFrame = _scrollView.frame;
-//    scrollFrame.origin.y += centerY;
-//    _scrollView.frame = scrollFrame;
+}
+
+
+- (CGRect)imageViewframeOnScrollView {
+    CGRect scrollViewFrame = _scrollView.frame;
+    CGFloat H = scrollViewFrame.size.width * _ImageView.image.size.height/_ImageView.image.size.width;
+    CGPoint center = _scrollView.center;
+    return CGRectMake(center.x - scrollViewFrame.size.width/2, center.y - H/2, scrollViewFrame.size.width, H);
+}
+
+- (UIImage *)currentImage {
+    return _ImageView.image;
 }
 
 
