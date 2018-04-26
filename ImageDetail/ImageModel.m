@@ -8,6 +8,7 @@
 
 #import "ImageModel.h"
 #import "ImageHeader.h"
+#import <SDImageCache.h>
 @implementation ImageModel
 
 - (CGRect)smallImageViewframeOriginWindow {
@@ -16,6 +17,25 @@
 
 - (CGSize)smallImageSize {
     return self.smallImageView.image.size;
+}
+
+- (CGSize)bigImageSize {
+    return self.bigImageView.image.size;
+}
+
+- (BOOL)isCacheImageKey:(NSString *)key {
+    if ([[SDImageCache sharedImageCache] imageFromCacheForKey:key]) {
+        return YES;
+    }
+    return NO;
+}
+
+- (UIImage *)getCurrentImage {
+    if ([self isCacheImageKey:self.urlStr]) {
+        return [[SDImageCache sharedImageCache] imageFromCacheForKey:self.urlStr];
+    } else {
+        return _smallImageView.image;
+    }
 }
 
 - (CGRect)imageViewframeShowWindow {
@@ -33,5 +53,11 @@
     return frame;
 }
 
+- (CGRect)bigImageViewFrameOnScrollView {
+    CGRect scrollViewFrame = _bigScrollView.frame;
+    CGFloat H = scrollViewFrame.size.width * self.bigImageSize.height/self.bigImageSize.width;
+    CGPoint center = _bigScrollView.center;
+    return CGRectMake(center.x - scrollViewFrame.size.width/2, center.y - H/2, scrollViewFrame.size.width, H);
+}
 
 @end

@@ -51,7 +51,6 @@
     if (self.dismissBlock) {
         self.dismissBlock();
     }
-    
 }
 
 - (void)doubleTap:(UITapGestureRecognizer *)tap {
@@ -122,12 +121,11 @@
 }
 
 
-- (void)updateImageSize
-{
+- (void)updateImageSize {
     [_scrollView setZoomScale:1.0 animated:NO];
     
-    CGFloat imageW = self.model.smallImageSize.width;
-    CGFloat imageH = self.model.smallImageSize.height;
+    CGFloat imageW = self.model.bigImageSize.width;
+    CGFloat imageH = self.model.bigImageSize.height;
     
     CGFloat height =  Screen_Width * imageH/imageW;
     if (imageH/imageW > Screen_Height/Screen_Width) {
@@ -137,20 +135,21 @@
         _ImageView.frame =CGRectMake(0, Screen_Height/2 - height/2, Screen_Width, height);
     }
     _scrollView.contentSize = CGSizeMake(Screen_Width, height);
-    _model.smallImageSize = CGSizeMake(Screen_Width, height);
     
 }
 
 - (void)setModel:(ImageModel *)model {
     _model = model;
-    
+    model.bigScrollView = _scrollView;
+    model.bigImageView = _ImageView;
     __weak typeof (self)ws = self;
     [_ImageView sd_setImageWithURL:[NSURL URLWithString:model.urlStr] placeholderImage:model.smallImageView.image completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
         if (!error) {
-//            ws.model.thumbnailImageSize = image.size;
             [ws updateImageSize];
         }
     }];
+    [self updateImageSize];
+
 }
 
 - (UIScrollView *)scrollView {
@@ -184,19 +183,18 @@
     _scrollView.center = CGPointMake(Screen_Width/2, Screen_Height/2+centerY);
 }
 
-
-- (CGRect)imageViewframeOnScrollView {
-    CGRect scrollViewFrame = _scrollView.frame;
-    CGFloat H = scrollViewFrame.size.width * _ImageView.image.size.height/_ImageView.image.size.width;
-    CGPoint center = _scrollView.center;
-    return CGRectMake(center.x - scrollViewFrame.size.width/2, center.y - H/2, scrollViewFrame.size.width, H);
-}
-
-- (UIImage *)currentImage {
-    return _ImageView.image;
-}
-- (UIImageView *)currentImageView {
-    return _ImageView;
-}
+//- (CGRect)imageViewframeOnScrollView {
+//    CGRect scrollViewFrame = _scrollView.frame;
+//    CGFloat H = scrollViewFrame.size.width * _ImageView.image.size.height/_ImageView.image.size.width;
+//    CGPoint center = _scrollView.center;
+//    return CGRectMake(center.x - scrollViewFrame.size.width/2, center.y - H/2, scrollViewFrame.size.width, H);
+//}
+//
+//- (UIImage *)currentImage {
+//    return _ImageView.image;
+//}
+//- (UIImageView *)currentImageView {
+//    return _ImageView;
+//}
 
 @end

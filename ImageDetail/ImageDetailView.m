@@ -69,7 +69,7 @@ NSString * const registerId = @"collectionCell";
     UIImageView * imageView = [[UIImageView alloc] initWithFrame:frame];
     imageView.contentMode = UIViewContentModeScaleAspectFill;
     imageView.clipsToBounds = YES;
-    imageView.image = currentModel.smallImageView.image;
+    imageView.image = [currentModel getCurrentImage];
     [self addSubview:imageView];
     
     
@@ -82,10 +82,10 @@ NSString * const registerId = @"collectionCell";
     }];
 }
 - (void)dismissView {
-    ImageDetailCollectionViewCell * cell = [self getCurrentCell];
+    ImageModel * currentModel = self.dataSource[_currentPage];
+    UIImageView * imageView = [[UIImageView alloc] initWithFrame:[currentModel bigImageViewFrameOnScrollView]];
+    imageView.image = currentModel.bigImageView.image;
     
-    UIImageView * imageView = [[UIImageView alloc] initWithFrame:[cell imageViewframeOnScrollView]];
-    imageView.image = [cell currentImage];
     imageView.clipsToBounds = YES;
     imageView.contentMode = UIViewContentModeScaleAspectFill;
     [self addSubview:imageView];
@@ -93,7 +93,6 @@ NSString * const registerId = @"collectionCell";
     self.collectionView.hidden = YES;
     self.pageControl.hidden = YES;
     
-    ImageModel * currentModel = self.dataSource[self.currentPage];
     [UIView animateWithDuration:0.3 animations:^{
         imageView.frame = [currentModel smallImageViewframeOriginWindow];
         self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0];
@@ -122,8 +121,8 @@ NSString * const registerId = @"collectionCell";
             {
                 _currentCell = [self getCurrentCell];
                 CGPoint location = [gesture locationInView:self];
-                UIImageView * imageViewCell = [_currentCell currentImageView];
-                _absoluteDifference = imageViewCell.frame.origin.y - location.y + 0.3*imageViewCell.frame.size.height;
+                UIImageView * imageView = [self.dataSource[self.currentPage] bigImageView];
+                _absoluteDifference = imageView.frame.origin.y - location.y + 0.3*imageView.frame.size.height;
                 _longBottom = Screen_Height - location.y;
             }
             break;
@@ -132,11 +131,9 @@ NSString * const registerId = @"collectionCell";
                 self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:flo];
                 if (flo<1 && flo>0) {
                     CGFloat num = piont.y;
-//                    NSLog(@"%f--caocao--%f",num,piont.y);
                     if (_absoluteDifference > 0) {
                         CGPoint location = [gesture locationInView:self];
                         num -= _absoluteDifference * (location.y -Screen_Height+_longBottom)/_longBottom;
-//                        NSLog(@"%f--caocao-",num);
                     }
                     [_currentCell changeSize:flo centerY:num];
                 }
@@ -170,13 +167,9 @@ NSString * const registerId = @"collectionCell";
     NSInteger index = self.collectionView.contentOffset.x / width + num;
     
     NSIndexPath *indexPath = [NSIndexPath indexPathForItem:index inSection:0];
-    
     ImageDetailCollectionViewCell * currentcell = (ImageDetailCollectionViewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
-    
     NSLog(@"%ld--%@",indexPath.row,currentcell);
-    
     return currentcell;
-    
 }
 
 - (void)setCurrentPage:(NSInteger)currentPage {
@@ -251,18 +244,6 @@ NSString * const registerId = @"collectionCell";
     }];
     return cell;
 }
-
-//- (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
-//    if ([cell isKindOfClass:[ImageDetailCollectionViewCell class]]) {
-////        [(ImageDetailCollectionViewCell *)cell updateImageSize];
-//    }
-//}
-//
-//- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
-//    if ([cell isKindOfClass:[ImageDetailCollectionViewCell class]]) {
-////        [(ImageDetailCollectionViewCell *)cell updateImageSize];
-//    }
-//}
 
 #pragma mark  ==========UICollectionView->scrollerViewDeleagte=====================
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {

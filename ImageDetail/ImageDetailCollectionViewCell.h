@@ -18,9 +18,9 @@ typedef void(^CollectionBackAlphaBlock) (CGFloat alpha);
 - (void)updateImageSize;
 - (void)changeSize:(CGFloat)multiple centerY:(CGFloat)centerY;
 
-- (CGRect)imageViewframeOnScrollView;
-
-- (UIImage *)currentImage;
-
-- (UIImageView *)currentImageView;
+//- (CGRect)imageViewframeOnScrollView;
+//
+//- (UIImage *)currentImage;
+//
+//- (UIImageView *)currentImageView;
 @end
