@@ -11,7 +11,7 @@
 @interface ImageModel : NSObject
 
 @property(nonatomic,copy)NSString * url;
-
-@property(nonatomic)CGSize size;
+@property(nonatomic,assign)CGSize size;
+@property(nonatomic,weak)UIImageView *imageView;
 
 @end

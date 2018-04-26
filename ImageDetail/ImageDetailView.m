@@ -34,7 +34,6 @@ NSString * const registerId = @"collectionCell";
     return imageDetail;
 }
 
-
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
@@ -44,7 +43,7 @@ NSString * const registerId = @"collectionCell";
 }
 
 - (void)initData {
-
+#warning  model 可以包含当前的图片 大图url 小图尺寸等信息。
     //1.初始化原始的数据
     self.dataSource = [[NSMutableArray alloc] init];
     for (NSString * str in self.imagesUrlArr) {
@@ -90,7 +89,7 @@ NSString * const registerId = @"collectionCell";
     CGRect scrollFrame = [[cell valueForKey:@"scrollView"] frame];
     CGFloat H = scrollFrame.size.width*imageViewCell.image.size.height/imageViewCell.image.size.width;
     
-    UIImageView * imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, scrollFrame.size.width, H)];
+    UIImageView * imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0 , scrollFrame.size.width, H)];
     imageView.center = [[cell valueForKey:@"scrollView"] center];
     imageView.image = imageViewCell.image;
     imageView.clipsToBounds = YES;
@@ -103,7 +102,7 @@ NSString * const registerId = @"collectionCell";
     CGRect frame = [originImageView convertRect:originImageView.bounds toView:originImageView.window];
     [UIView animateWithDuration:0.3 animations:^{
         imageView.frame = frame;
-        self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.0];
+        self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0];
     } completion:^(BOOL finished) {
         imageView.hidden = YES;
         [self removeFromSuperview];
@@ -123,19 +122,34 @@ NSString * const registerId = @"collectionCell";
 
 - (void)panAction:(UIPanGestureRecognizer *)gesture {
     CGPoint piont = [gesture translationInView:self];
-    CGFloat flo = (500 - piont.y)/500;
+    CGFloat flo = (Screen_Height - piont.y)/Screen_Height;
+    static CGFloat abschazhi = 0;
+    static CGFloat locationY = 0;
     switch (gesture.state) {
         case UIGestureRecognizerStateBegan:
             {
                 _currentCell = [self getCurrentCell];
-                NSLog(@"开始%f%f",piont.x, piont.y);
+                CGPoint location = [gesture locationInView:self];
+                ImageDetailCollectionViewCell * cell = [self getCurrentCell];
+                UIImageView * imageViewCell = [cell valueForKey:@"ImageView"];
+                abschazhi = imageViewCell.frame.origin.y - location.y + 0.3*imageViewCell.frame.size.height;
+                locationY = Screen_Height - location.y;
+//                NSLog(@"开始%f%f",location.x, location.y);
             }
             break;
         case UIGestureRecognizerStateChanged:
             {
                 self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:flo];
                 if (flo<1 && flo>0) {
-                    [_currentCell changeSize:flo centerY:piont.y];
+                    CGFloat num = piont.y;
+//                    NSLog(@"%f--caocao--%f",num,piont.y);
+                    if (abschazhi > 0) {
+                        CGPoint location = [gesture locationInView:self];
+                        num -= abschazhi * (location.y -Screen_Height+locationY)/locationY;
+//                        NSLog(@"%f--caocao-",num);
+
+                    }
+                    [_currentCell changeSize:flo centerY:num];
                 }
             }
             break;
@@ -186,7 +200,6 @@ NSString * const registerId = @"collectionCell";
     self.pageControl.hidden = YES;
     self.collectionView.hidden = YES;
 
-    
     [self.collectionView setContentOffset:CGPointMake((Screen_Width+SpaceWidth)*currentPage, 0)];
 
 }
@@ -244,18 +257,21 @@ NSString * const registerId = @"collectionCell";
     [cell setDismissBlock:^{
         [ws dismissView];
     }];
+    [cell setBackAlphaBlock:^(CGFloat alpha) {
+        self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:alpha];
+    }];
     return cell;
 }
 
 - (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
     if ([cell isKindOfClass:[ImageDetailCollectionViewCell class]]) {
-        [(ImageDetailCollectionViewCell *)cell updateImageSize];
+//        [(ImageDetailCollectionViewCell *)cell updateImageSize];
     }
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
     if ([cell isKindOfClass:[ImageDetailCollectionViewCell class]]) {
-        [(ImageDetailCollectionViewCell *)cell updateImageSize];
+//        [(ImageDetailCollectionViewCell *)cell updateImageSize];
     }
 }
 
