@@ -108,11 +108,13 @@ NSString * const registerId = @"collectionCell";
     self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:1.0];
     [self addSubview:self.collectionView];
     [self addSubview:self.pageControl];
+    /*
     UIPanGestureRecognizer * pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panAction:)];
     [self addGestureRecognizer:pan];
+     */
     
 }
-
+/*
 - (void)panAction:(UIPanGestureRecognizer *)gesture {
     CGPoint piont = [gesture translationInView:self];
     CGFloat flo = (Screen_Height - piont.y)/Screen_Height;
@@ -120,6 +122,8 @@ NSString * const registerId = @"collectionCell";
         case UIGestureRecognizerStateBegan:
             {
                 _currentCell = [self getCurrentCell];
+                ImageModel * currentModel = self.dataSource[self.currentPage];
+                currentModel.bigScrollView.clipsToBounds = NO;
                 CGPoint location = [gesture locationInView:self];
                 UIImageView * imageView = [self.dataSource[self.currentPage] bigImageView];
                 _absoluteDifference = imageView.frame.origin.y - location.y + 0.3*imageView.frame.size.height;
@@ -158,7 +162,7 @@ NSString * const registerId = @"collectionCell";
             break;
     }
 }
-
+*/
 
 - (ImageDetailCollectionViewCell *)getCurrentCell {
     NSInteger width = (Screen_Width+SpaceWidth);
@@ -216,6 +220,8 @@ NSString * const registerId = @"collectionCell";
         _collectionView.delegate = self;
         _collectionView.pagingEnabled = YES;
         _collectionView.showsHorizontalScrollIndicator = NO;
+//        _collectionView.delaysContentTouches = NO;//默认yes  设置NO则无论手指移动的多么快，始终都会将触摸事件传递给内部控件；
+//        _collectionView.canCancelContentTouches = NO; // 默认是yes
         _collectionView.backgroundColor = [UIColor clearColor];
         [_collectionView registerClass:[ImageDetailCollectionViewCell class] forCellWithReuseIdentifier:registerId];
         

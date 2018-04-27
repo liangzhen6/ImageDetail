@@ -66,9 +66,21 @@
 }
 - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset {
     CGPoint point = scrollView.contentOffset;
-    //只有是一根手指事件才做出响应。
-    if (point.y < 0 && _numberFinger == 1) {
-        if (velocity.y < 0) {
+    if (velocity.y<0 && fabs(velocity.y)>fabs(velocity.x)) {
+        //只有是一根手指事件才做出响应。
+        if ((point.y < 0&&_numberFinger == 1) && velocity.y < 0) {
+            //        if (velocity.y < 0) {
+            //            _startRun = NO;
+            //            //如果是向下滑动才触发消失的操作。
+            //            if (self.dismissBlock) {
+            //                self.dismissBlock();
+            //            }
+            //        } else {
+            //            [self changeSize:1.0 centerY:0.0];
+            //            if (self.backAlphaBlock) {
+            //                self.backAlphaBlock(1.0);
+            //            }
+            //        }
             _startRun = NO;
             //如果是向下滑动才触发消失的操作。
             if (self.dismissBlock) {
@@ -80,19 +92,17 @@
                 self.backAlphaBlock(1.0);
             }
         }
-
-    } else {
-        [self changeSize:1.0 centerY:0.0];
-        if (self.backAlphaBlock) {
-            self.backAlphaBlock(1.0);
-        }
     }
+
     _numberFinger = 0;
+    _scrollView.clipsToBounds = YES;
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
     _numberFinger = scrollView.panGestureRecognizer.numberOfTouches;
     _startRun = YES;
+    _scrollView.clipsToBounds = NO;
+
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
@@ -135,8 +145,8 @@
         _ImageView.frame =CGRectMake(0, Screen_Height/2 - height/2, Screen_Width, height);
     }
     _scrollView.contentSize = CGSizeMake(Screen_Width, height);
-    
 }
+
 
 - (void)setModel:(ImageModel *)model {
     _model = model;
@@ -167,20 +177,24 @@
         _scrollView.contentSize = CGSizeMake(width, height);
         _scrollView.userInteractionEnabled = YES;
         _scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        _scrollView.delaysContentTouches = NO;
-        _scrollView.canCancelContentTouches = YES;
-        _scrollView.alwaysBounceVertical = NO;
+        _scrollView.delaysContentTouches = NO;//默认yes  设置NO则无论手指移动的多么快，始终都会将触摸事件传递给内部控件；
+        _scrollView.canCancelContentTouches = NO; // 默认是yes
+        _scrollView.alwaysBounceVertical = YES;//设置上下回弹
         _scrollView.showsVerticalScrollIndicator = NO;
-
+        _scrollView.showsHorizontalScrollIndicator = NO;
+        
     }
     return _scrollView;
 }
+
+
 
 - (void)changeSize:(CGFloat)multiple centerY:(CGFloat)centerY {
     NSLog(@"%f---%f",multiple,centerY);
     multiple = multiple>0.4?multiple:0.4;
     _scrollView.transform = CGAffineTransformMakeScale(multiple, multiple);
     _scrollView.center = CGPointMake(Screen_Width/2, Screen_Height/2+centerY);
+
 }
 
 //- (CGRect)imageViewframeOnScrollView {
